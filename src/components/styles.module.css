@@ -1,6 +1,12 @@
+:root {
+  --video-height: 480px;
+  --video-width: 860px;
+  --control-bar-height: 50px;
+}
+
 .player {
-  width: 400px;
-  height: 240px;
+  width: var(--video-width);
+  max-height: var(--video-height);
   background: #000;
 }
 
@@ -12,9 +18,9 @@
   width: 100%;
   height: 100%;
 }
+
 .video-cover {
-  height: 240px;
-  transform: translateY(-240px);
+  height: calc(var(--video-height) - var(--control-bar-height));
   display: flex;
 }
 
@@ -30,3 +36,21 @@
   height: 100%;
   display: inline;
 }
+
+.control-bar {
+  color: #fff;
+  height: var(--control-bar-height);
+  display: flex;
+}
+
+.video-overlay {
+  transform: translateY(calc(var(--video-height) * -1));
+}
+
+.left-icons {
+    display: flex;
+    width: 114px;
+    font-size: 19px;
+    justify-content: space-around;
+  }
+
