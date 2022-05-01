@@ -11,8 +11,9 @@ export default function Player(props) {
         setVideoPlaying((isVideoPlaying) => !isVideoPlaying);
     }
 
+    //handle play pause 
     useEffect( ()=>{
-        console.log(isVideoPlaying);
+        
         if(isVideoPlaying)
         {
             videoRef.current.play();
@@ -23,6 +24,9 @@ export default function Player(props) {
         }
 
     }, [isVideoPlaying]);
+
+
+    useEffect(()=>{setTimeout(()=>{videoRef.current.click(); setVideoPlaying(true)},500)},[]);
   return (
     <div className={classes.player}>
       <div className={classes["video-wrapper"]}>
