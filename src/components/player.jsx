@@ -91,7 +91,10 @@ export default function Player(props) {
           <div className={classes["right"]} onDoubleClick={moveForward}></div>
         </div>
         <div className={classes["control-bar"]}>
-          <div className={classes["progress-bar"]}></div>
+          <div className={classes["progress-bar"]}>
+              <div className={classes.currentTime} style={{width:860*passedDuration/totalDuration}}>
+              </div>
+          </div>
           <div className={classes["icon-bar"]}>
             <div className={classes["left-icons"]}>
               <span onClick={playbackToggle}>

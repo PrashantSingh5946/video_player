@@ -56,7 +56,10 @@
 
 .progress-bar {
   padding: 1px;
-  background: red;
+  margin-left: 2px;
+  margin-right: 2px;
+  background: #333;
+  display: flex;
 }
 
 .icon-bar{
@@ -67,4 +70,9 @@
 {
     font-size: 14px;
     padding: 3px;
+}
+
+.currentTime{
+    background: red;
+    padding: 1px;
 }
