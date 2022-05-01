@@ -29,7 +29,6 @@ export default function Player(props) {
 
   const updatePlaybackDuration = () => {
     setPassedDuration(videoRef.current.currentTime);
-    setTotalDuration(videoRef.current.duration)
   };
 
   //handle playback update
@@ -46,29 +45,50 @@ export default function Player(props) {
     }
   }, [isVideoPlaying]);
 
-  //autoplay on startup
-
+  //move time left and write
+  const moveBack = () => {
+    if (videoRef.current.currentTime > 10) {
+      videoRef.current.currentTime = videoRef.current.currentTime - 10;
+    } else {
+      videoRef.current.currentTime = 0;
+    }
+  };
+  const moveForward = () =>
+{
+    if(videoRef.current.currentTime+10<videoRef.current.duration)
+    {
+        videoRef.current.currentTime=videoRef.current.currentTime + 10;
+    }
+    else
+    {
+        videoRef.current.currentTime=videoRef.current.duration;
+    }
+}
   //update time on play
   const setTotalTime = () => {
     setTotalDuration(videoRef.current.duration);
-    alert("Hello")
-  }
+  };
 
   return (
     <div className={classes.player}>
       <div className={classes["video-wrapper"]}>
-        <video src={props.url} ref={videoRef} onLoad={setTotalTime} autoPlay />
+        <video
+          src={props.url}
+          ref={videoRef}
+          onDurationChange={setTotalTime}
+          autoPlay
+        />
       </div>
       <div className={classes["video-overlay"]}>
         <div className={classes["video-cover"]}>
-          <div className={classes["left"]}></div>
+          <div className={classes["left"]} onDoubleClick={moveBack}></div>
           <div
             className={classes["play"]}
             onClick={playbackToggle}
             onDurationChange={updatePlaybackDuration}
             ref={playButtonRef}
           ></div>
-          <div className={classes["right"]}></div>
+          <div className={classes["right"]} onDoubleClick={moveForward}></div>
         </div>
         <div className={classes["control-bar"]}>
           <div className={classes["progress-bar"]}></div>
