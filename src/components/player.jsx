@@ -83,6 +83,13 @@ export default function Player(props) {
       setBufferedLength();
   },[passedDuration])
 
+  const jumpToTime = (e) =>
+  {
+      let clickpoint = e.clientX-5;
+      let equivalentDuration = (clickpoint/850) * totalDuration;
+      videoRef.current.currentTime=equivalentDuration;
+  }
+
   return (
     <div className={classes.player}>
       <div className={classes["video-wrapper"]}>
@@ -91,7 +98,6 @@ export default function Player(props) {
           ref={videoRef}
           onDurationChange={setTotalTime}
           autoPlay
-          controls
         />
       </div>
       <div className={classes["video-overlay"]}>
@@ -106,7 +112,7 @@ export default function Player(props) {
           <div className={classes["right"]} onDoubleClick={moveForward}></div>
         </div>
         <div className={classes["control-bar"]}>
-          <div className={classes["progress-bar"]}>
+          <div className={classes["progress-bar"]} onClick={jumpToTime}>
             <div
               className={classes.currentTime}
               style={{
