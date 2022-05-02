@@ -14,6 +14,7 @@ export default function Player(props) {
   const playButtonRef = useRef();
   const [passedDuration, setPassedDuration] = useState(0);
   const [totalDuration, setTotalDuration] = useState(0);
+  const [bufferedDuration, setBufferedDuration] = useState(0);
 
   function formatTime(seconds) {
     return [parseInt((seconds / 60) % 60), parseInt(seconds % 60)]
@@ -53,21 +54,34 @@ export default function Player(props) {
       videoRef.current.currentTime = 0;
     }
   };
-  const moveForward = () =>
-{
-    if(videoRef.current.currentTime+10<videoRef.current.duration)
-    {
-        videoRef.current.currentTime=videoRef.current.currentTime + 10;
+  const moveForward = () => {
+    if (videoRef.current.currentTime + 10 < videoRef.current.duration) {
+      videoRef.current.currentTime = videoRef.current.currentTime + 10;
+    } else {
+      videoRef.current.currentTime = videoRef.current.duration;
     }
-    else
-    {
-        videoRef.current.currentTime=videoRef.current.duration;
-    }
-}
+  };
   //update time on play
   const setTotalTime = () => {
     setTotalDuration(videoRef.current.duration);
   };
+
+  //handle buffer length
+  const setBufferedLength = () => {
+    let bufferTimeRanges = videoRef.current.buffered;
+    for (let i = 0; i < bufferTimeRanges.length; i++) {
+      if (
+        passedDuration >= bufferTimeRanges.start(i) &&
+        passedDuration < bufferTimeRanges.end(i)
+      ) {
+        setBufferedDuration(bufferTimeRanges.end(i)-passedDuration);
+      }
+    }
+  };
+
+  useEffect(()=>{
+      setBufferedLength();
+  },[passedDuration])
 
   return (
     <div className={classes.player}>
@@ -77,6 +91,7 @@ export default function Player(props) {
           ref={videoRef}
           onDurationChange={setTotalTime}
           autoPlay
+          controls
         />
       </div>
       <div className={classes["video-overlay"]}>
@@ -92,8 +107,24 @@ export default function Player(props) {
         </div>
         <div className={classes["control-bar"]}>
           <div className={classes["progress-bar"]}>
-              <div className={classes.currentTime} style={{width:860*passedDuration/totalDuration}}>
-              </div>
+            <div
+              className={classes.currentTime}
+              style={{
+                width:
+                  (850 * passedDuration) / totalDuration
+                    ? (850 * passedDuration) / totalDuration
+                    : 0,
+              }}
+            ></div>
+            <div
+              className={classes.bufferedTime}
+              style={{
+                width:
+                  (850 * bufferedDuration) / totalDuration
+                    ? (850 * bufferedDuration) / totalDuration
+                    : 0,
+              }}
+            ></div>
           </div>
           <div className={classes["icon-bar"]}>
             <div className={classes["left-icons"]}>

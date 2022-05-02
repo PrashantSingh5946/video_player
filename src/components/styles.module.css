@@ -56,8 +56,8 @@
 
 .progress-bar {
   padding: 1px;
-  margin-left: 2px;
-  margin-right: 2px;
+  margin-left: 5px;
+  margin-right: 5px;
   background: #333;
   display: flex;
 }
@@ -75,4 +75,10 @@
 .currentTime{
     background: red;
     padding: 1px;
+}
+
+.bufferedTime
+{
+    padding: 1px;
+    background: #adadad;
 }
