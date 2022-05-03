@@ -1,7 +1,8 @@
 :root {
-  --video-height: 480px;
+  --video-height: 510px;
   --video-width: 860px;
   --control-bar-height: 50px;
+  --central-icon-size: 70px;
 }
 
 .player {
@@ -62,6 +63,11 @@
   display: flex;
 }
 
+.progress-bar-wrapper
+{
+    padding: 10px 0px;
+}
+
 .icon-bar{
     padding: 5px;
 }
@@ -81,4 +87,11 @@
 {
     padding: 1px;
     background: #adadad;
+}
+
+.central-icon{
+font-size: var(--central-icon-size);
+color: white;
+position: relative;
+margin-top: calc(var(--video-height)/2 - var(--central-icon-size)/2);
 }
