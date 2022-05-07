@@ -1,24 +1,26 @@
 import React, { useEffect, useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { ReactComponent as WidescreenLogo } from "./svg/widescreen.svg";
+import { ReactComponent as SettingsLogo } from "./svg/settings.svg";
 import {
   faPlay,
   faForwardStep,
   faVolumeHigh,
   faPause,
   faVolumeMute,
-  faRepeat,
   faRotateRight,
+  faExpand,
 } from "@fortawesome/free-solid-svg-icons";
 import classes from "./styles.module.css";
 
 export default function Player(props) {
   const videoRef = useRef();
-  const [isVideoPlaying, setVideoPlaying] = useState(false);
+  const [isVideoPlaying, setVideoPlaying] = useState(true);
   const playButtonRef = useRef();
   const [passedDuration, setPassedDuration] = useState(0);
   const [totalDuration, setTotalDuration] = useState(0);
   const [bufferedDuration, setBufferedDuration] = useState(0);
-  const [soundStatus, setSoundStatus] = useState(true);
+  const [soundStatus, setSoundStatus] = useState(false);
   const [isVideoOver, setIsVideoOver] = useState(false);
 
   function formatTime(seconds) {
@@ -33,14 +35,21 @@ export default function Player(props) {
     setVideoPlaying((isVideoPlaying) => !isVideoPlaying);
   };
 
+  //handle autoplay
+
+  //replay functionality
+  const replay = async () => {
+    console.log("Video playing");
+    setIsVideoOver(false);
+    setTimeout(() => {
+      videoRef.current.play();
+      setVideoPlaying(true);
+    }, 500);
+  };
+
   const updatePlaybackDuration = () => {
     setPassedDuration(videoRef.current.currentTime);
   };
-
-  //handle playback update
-  useEffect(() => {
-    setInterval(updatePlaybackDuration, 200);
-  }, []);
 
   //handle play pause
   useEffect(() => {
@@ -84,11 +93,17 @@ export default function Player(props) {
     }
   };
 
+  //setting the buffer state and checking for repeat logo
   useEffect(() => {
     setBufferedLength();
+    handleVideoOver();
   }, [passedDuration]);
 
   const jumpToTime = (e) => {
+    if (isVideoOver) {
+      setIsVideoOver(false);
+      setVideoPlaying(false);
+    }
     let clickpoint = e.clientX - 5;
     let equivalentDuration = (clickpoint / 850) * totalDuration;
     videoRef.current.currentTime = equivalentDuration;
@@ -102,19 +117,22 @@ export default function Player(props) {
     setSoundStatus(!soundStatus);
   };
 
-  useEffect(()=>{handleVideoOver()},[passedDuration])
-
   const handleVideoOver = () => {
-    if(passedDuration===totalDuration && passedDuration)
-    {
+    if (passedDuration === totalDuration && passedDuration) {
       setIsVideoOver(true);
     }
-   
   };
   return (
     <div className={classes.player}>
       <div className={classes["video-wrapper"]}>
-        <video src={props.url} ref={videoRef} onDurationChange={setTotalTime} />
+        <video
+          src={props.url}
+          ref={videoRef}
+          onDurationChange={setTotalTime}
+          onTimeUpdate={updatePlaybackDuration}
+          autoPlay={true}
+          muted={true}
+        />
       </div>
       <div className={classes["video-overlay"]}>
         <div className={classes["video-cover"]}>
@@ -127,7 +145,10 @@ export default function Player(props) {
           >
             <div className={classes["central-icon"]}>
               {isVideoOver && (
-                <FontAwesomeIcon icon={faRotateRight}></FontAwesomeIcon>
+                <FontAwesomeIcon
+                  icon={faRotateRight}
+                  onClick={replay}
+                ></FontAwesomeIcon>
               )}
             </div>
           </div>
@@ -158,12 +179,16 @@ export default function Player(props) {
           </div>
           <div className={classes["icon-bar"]}>
             <div className={classes["left-icons"]}>
-              <span onClick={playbackToggle}>
-                {isVideoPlaying ? (
-                  <FontAwesomeIcon icon={faPause} />
-                ) : (
-                  <FontAwesomeIcon icon={faPlay} />
-                )}
+              <span>
+                {!isVideoOver &&
+                  (isVideoPlaying && !isVideoOver ? (
+                    <FontAwesomeIcon icon={faPause} onClick={playbackToggle} />
+                  ) : (
+                    <FontAwesomeIcon icon={faPlay} onClick={playbackToggle} />
+                  ))}
+                {isVideoOver ? (
+                  <FontAwesomeIcon icon={faRotateRight} onClick={replay} />
+                ) : null}
               </span>
               <span>
                 <FontAwesomeIcon icon={faForwardStep} />
@@ -178,6 +203,17 @@ export default function Player(props) {
               <span className={classes.time}>
                 {formatTime(Math.floor(passedDuration))}/
                 {formatTime(Math.floor(totalDuration))}
+              </span>
+            </div>
+            <div className={classes["right-icons"]}>
+              <span style={{transform: `translateY(-8px)`}}>
+                <SettingsLogo />
+              </span>
+              <span className={classes["widescreen"]}>
+                <WidescreenLogo />
+              </span>
+              <span>
+                <FontAwesomeIcon icon={faExpand}></FontAwesomeIcon>
               </span>
             </div>
           </div>

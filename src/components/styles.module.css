@@ -50,7 +50,7 @@
 
 .left-icons {
   display: flex;
-  width: 180px;
+  width: 240px;
   font-size: 19px;
   justify-content: space-around;
 }
@@ -70,6 +70,7 @@
 
 .icon-bar{
     padding: 5px;
+    display: flex;
 }
 
 .time
@@ -94,4 +95,23 @@ font-size: var(--central-icon-size);
 color: white;
 position: relative;
 margin-top: calc(var(--video-height)/2 - var(--central-icon-size)/2);
+}
+
+
+.right-icons
+{
+  display: flex;
+  width: 180px;
+  font-size: 19px;
+  justify-content: space-around;
+  margin-left: auto;
+}
+
+.widescreen{
+  width: 40px;
+  transform: translateY(-9px);
+}
+
+.right-icons span{
+  width: 40px;
 }
