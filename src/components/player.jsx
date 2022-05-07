@@ -22,6 +22,7 @@ export default function Player(props) {
   const [bufferedDuration, setBufferedDuration] = useState(0);
   const [soundStatus, setSoundStatus] = useState(false);
   const [isVideoOver, setIsVideoOver] = useState(false);
+  const [isFullScreen, setIsFullScreen] = useState(false);
 
   function formatTime(seconds) {
     return [parseInt((seconds / 60) % 60), parseInt(seconds % 60)]
@@ -35,7 +36,17 @@ export default function Player(props) {
     setVideoPlaying((isVideoPlaying) => !isVideoPlaying);
   };
 
-  //handle autoplay
+  const fullscreenchanged = (event) =>
+  {
+    if (!document.fullscreenElement) {
+      setIsFullScreen(false);
+    } 
+  }
+
+  //manage fullscreen listener
+  useEffect(()=>{
+    document.onfullscreenchange = fullscreenchanged;
+  },[])
 
   //replay functionality
   const replay = async () => {
@@ -122,6 +133,29 @@ export default function Player(props) {
       setIsVideoOver(true);
     }
   };
+
+  useEffect(() => {
+    if (isFullScreen) {
+      document.documentElement.requestFullscreen();
+      var r = document.querySelector(":root");
+      // Set the value of variable --blue to another value (in this case "lightblue")
+      r.style.setProperty("--video-height", window.screen.height);
+      r.style.setProperty("--video-width", window.screen.width);
+    } else {
+      var r = document.querySelector(":root");
+      // Set the value of variable --blue to another value (in this case "lightblue")
+      r.style.setProperty("--video-height", "510px");
+      r.style.setProperty("--video-width", "860px");
+      document.exitFullscreen();
+    }
+  }, [isFullScreen]);
+
+  const handleFullScreen = () => {
+    setIsFullScreen(!isFullScreen);
+  };
+
+  const handleWideScreen = () => {};
+
   return (
     <div className={classes.player}>
       <div className={classes["video-wrapper"]}>
@@ -206,13 +240,16 @@ export default function Player(props) {
               </span>
             </div>
             <div className={classes["right-icons"]}>
-              <span style={{transform: `translateY(-8px)`}}>
+              <span style={{ transform: `translateY(-8px)` }}>
                 <SettingsLogo />
               </span>
-              <span className={classes["widescreen"]}>
+              <span
+                className={classes["widescreen"]}
+                onClick={handleWideScreen}
+              >
                 <WidescreenLogo />
               </span>
-              <span>
+              <span onClick={handleFullScreen}>
                 <FontAwesomeIcon icon={faExpand}></FontAwesomeIcon>
               </span>
             </div>
