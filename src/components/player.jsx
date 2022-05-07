@@ -141,12 +141,16 @@ export default function Player(props) {
       // Set the value of variable --blue to another value (in this case "lightblue")
       r.style.setProperty("--video-height", window.screen.height);
       r.style.setProperty("--video-width", window.screen.width);
-    } else {
+    } else if(totalDuration){
       var r = document.querySelector(":root");
       // Set the value of variable --blue to another value (in this case "lightblue")
       r.style.setProperty("--video-height", "510px");
       r.style.setProperty("--video-width", "860px");
-      document.exitFullscreen();
+      if(document.fullscreenElement)
+      {
+        document.exitFullscreen();
+
+      }
     }
   }, [isFullScreen]);
 
