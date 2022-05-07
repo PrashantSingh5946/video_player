@@ -244,7 +244,7 @@ export default function Player(props) {
               </span>
             </div>
             <div className={classes["right-icons"]}>
-              <span style={{ transform: `translateY(-8px)` }}>
+              <span className={classes["settings"]}>
                 <SettingsLogo />
               </span>
               <span

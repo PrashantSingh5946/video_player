@@ -54,6 +54,13 @@
   font-size: 19px;
   justify-content: space-around;
 }
+.left-icons span{
+  cursor: pointer;
+}
+
+.left-icons span:hover{
+transform: scale(1.2);
+}
 
 .progress-bar {
   padding: 1px;
@@ -112,6 +119,11 @@ margin-top: calc(var(--video-height)/2 - var(--central-icon-size)/2);
   transform: translateY(-9px);
 }
 
+.settings{
+  transform: translateY(-8px);
+}
+
 .right-icons span{
   width: 40px;
+  cursor: pointer;
 }
