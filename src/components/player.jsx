@@ -2,6 +2,10 @@ import React, { useEffect, useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ReactComponent as WidescreenLogo } from "./svg/widescreen.svg";
 import { ReactComponent as SettingsLogo } from "./svg/settings.svg";
+import { ReactComponent as Play } from "./svg/play.svg";
+import { ReactComponent as Next } from "./svg/next.svg";
+
+
 import {
   faPlay,
   faForwardStep,
@@ -222,14 +226,14 @@ export default function Player(props) {
                   (isVideoPlaying && !isVideoOver ? (
                     <FontAwesomeIcon icon={faPause} onClick={playbackToggle} />
                   ) : (
-                    <FontAwesomeIcon icon={faPlay} onClick={playbackToggle} />
+                    <Play onClick={playbackToggle} />
                   ))}
                 {isVideoOver ? (
                   <FontAwesomeIcon icon={faRotateRight} onClick={replay} />
                 ) : null}
               </span>
               <span>
-                <FontAwesomeIcon icon={faForwardStep} />
+                <Next/>
               </span>
               <span onClick={toggleSound}>
                 {soundStatus ? (

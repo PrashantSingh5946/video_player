@@ -54,13 +54,6 @@
   font-size: 19px;
   justify-content: space-around;
 }
-.left-icons span{
-  cursor: pointer;
-}
-
-.left-icons span:hover{
-transform: scale(1.2);
-}
 
 .progress-bar {
   padding: 1px;
@@ -114,16 +107,8 @@ margin-top: calc(var(--video-height)/2 - var(--central-icon-size)/2);
   margin-left: auto;
 }
 
-.widescreen{
-  width: 40px;
-  transform: translateY(-9px);
-}
-
-.settings{
-  transform: translateY(-8px);
-}
-
-.right-icons span{
-  width: 40px;
+.right-icons span,.left-icons span{
+  width: 48px;
+  height: 48px;
   cursor: pointer;
 }
