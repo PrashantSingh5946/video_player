@@ -3,8 +3,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ReactComponent as WidescreenLogo } from "./svg/widescreen.svg";
 import { ReactComponent as SettingsLogo } from "./svg/settings.svg";
 import { ReactComponent as Play } from "./svg/play.svg";
+import { ReactComponent as Pause } from "./svg/pause.svg";
 import { ReactComponent as Next } from "./svg/next.svg";
-
+import { ReactComponent as VolumeOn } from "./svg/volume_on.svg";
+import { ReactComponent as Mute } from "./svg/mute.svg";
 
 import {
   faPlay,
@@ -40,17 +42,16 @@ export default function Player(props) {
     setVideoPlaying((isVideoPlaying) => !isVideoPlaying);
   };
 
-  const fullscreenchanged = (event) =>
-  {
+  const fullscreenchanged = (event) => {
     if (!document.fullscreenElement) {
       setIsFullScreen(false);
-    } 
-  }
+    }
+  };
 
   //manage fullscreen listener
-  useEffect(()=>{
+  useEffect(() => {
     document.onfullscreenchange = fullscreenchanged;
-  },[])
+  }, []);
 
   //replay functionality
   const replay = async () => {
@@ -145,15 +146,13 @@ export default function Player(props) {
       // Set the value of variable --blue to another value (in this case "lightblue")
       r.style.setProperty("--video-height", window.screen.height);
       r.style.setProperty("--video-width", window.screen.width);
-    } else if(totalDuration){
+    } else if (totalDuration) {
       var r = document.querySelector(":root");
       // Set the value of variable --blue to another value (in this case "lightblue")
       r.style.setProperty("--video-height", "510px");
       r.style.setProperty("--video-width", "860px");
-      if(document.fullscreenElement)
-      {
+      if (document.fullscreenElement) {
         document.exitFullscreen();
-
       }
     }
   }, [isFullScreen]);
@@ -224,7 +223,7 @@ export default function Player(props) {
               <span>
                 {!isVideoOver &&
                   (isVideoPlaying && !isVideoOver ? (
-                    <FontAwesomeIcon icon={faPause} onClick={playbackToggle} />
+                    <Pause onClick={playbackToggle} />
                   ) : (
                     <Play onClick={playbackToggle} />
                   ))}
@@ -233,14 +232,10 @@ export default function Player(props) {
                 ) : null}
               </span>
               <span>
-                <Next/>
+                <Next />
               </span>
-              <span onClick={toggleSound}>
-                {soundStatus ? (
-                  <FontAwesomeIcon icon={faVolumeHigh} />
-                ) : (
-                  <FontAwesomeIcon icon={faVolumeMute}></FontAwesomeIcon>
-                )}
+              <span onClick={toggleSound} style={{ padding: "6px" }}>
+                {soundStatus ? <VolumeOn /> : <Mute />}
               </span>
               <span className={classes.time}>
                 {formatTime(Math.floor(passedDuration))}/
@@ -257,7 +252,10 @@ export default function Player(props) {
               >
                 <WidescreenLogo />
               </span>
-              <span onClick={handleFullScreen}>
+              <span
+                className={classes["fullscreen"]}
+                onClick={handleFullScreen}
+              >
                 <FontAwesomeIcon icon={faExpand}></FontAwesomeIcon>
               </span>
             </div>
