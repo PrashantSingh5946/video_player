@@ -21,14 +21,15 @@ import classes from "./styles.module.css";
 
 export default function Player(props) {
   const videoRef = useRef();
-  const [isVideoPlaying, setVideoPlaying] = useState(true);
+  const [isVideoPlaying, setVideoPlaying] = useState(false);
   const playButtonRef = useRef();
   const [passedDuration, setPassedDuration] = useState(0);
   const [totalDuration, setTotalDuration] = useState(0);
   const [bufferedDuration, setBufferedDuration] = useState(0);
-  const [soundStatus, setSoundStatus] = useState(false);
+  const [soundStatus, setSoundStatus] = useState(true);
   const [isVideoOver, setIsVideoOver] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const [socketStatus, setSocketStatus] = useState(false);
 
   function formatTime(seconds) {
     return [parseInt((seconds / 60) % 60), parseInt(seconds % 60)]
@@ -36,11 +37,24 @@ export default function Player(props) {
       .replace(/\b(\d)\b/g, "0$1");
   }
 
-  //play pause functionality
-  const playbackToggle = () => {
-    //play and pause functionality
-    setVideoPlaying((isVideoPlaying) => !isVideoPlaying);
-  };
+
+  function dispatcher(event) {
+
+    emitSocketMessage({ "event": event });
+
+    //functionMap[event]();
+
+  }
+
+  const emitSocketMessage = (message) => {
+
+    if (socketStatus) {
+      console.log(message)
+      window.ws.send(JSON.stringify(message));
+    }
+
+  }
+
 
   const fullscreenchanged = (event) => {
     if (!document.fullscreenElement) {
@@ -51,7 +65,45 @@ export default function Player(props) {
   //manage fullscreen listener
   useEffect(() => {
     document.onfullscreenchange = fullscreenchanged;
+    let ws = new WebSocket(`ws://${window.location.hostname}:8000`);
+    window.ws = ws;
+    ws.addEventListener("open", () => { setSocketStatus(true); console.log("Socket open") })
+
+    ws.addEventListener("close", () => { setSocketStatus(false); console.log("Socket closed") })
+
+    ws.addEventListener("message", (packet) => {
+
+
+
+      packet.data.text().then((res) => {        
+
+        let data = JSON.parse(res);
+
+          //Object.keys(data).indexOf("event")!= -1 ?? functionMap[data["event"]]();
+
+          let func = functionMap[data["event"]];
+
+          func();
+
+          console.log("Invoking function " + data["event"])
+          console.log(data)
+      })
+
+    })
+
+
   }, []);
+
+  const functionMap = {
+
+    "playbackToggle" : () => {
+
+      console.log("Function has been called")
+      //play and pause functionality
+      setVideoPlaying((isVideoPlaying) => !isVideoPlaying);
+    }
+
+  }
 
   //replay functionality
   const replay = async () => {
@@ -76,6 +128,7 @@ export default function Player(props) {
     }
   }, [isVideoPlaying]);
 
+
   //move time left and write
   const moveBack = () => {
     if (videoRef.current.currentTime > 5) {
@@ -84,6 +137,8 @@ export default function Player(props) {
       videoRef.current.currentTime = 0;
     }
   };
+
+
   const moveForward = () => {
     if (videoRef.current.currentTime + 5 < videoRef.current.duration) {
       videoRef.current.currentTime = videoRef.current.currentTime + 5;
@@ -91,6 +146,8 @@ export default function Player(props) {
       videoRef.current.currentTime = videoRef.current.duration;
     }
   };
+
+
   //update time on play
   const setTotalTime = () => {
     setTotalDuration(videoRef.current.duration);
@@ -161,7 +218,7 @@ export default function Player(props) {
     setIsFullScreen(!isFullScreen);
   };
 
-  const handleWideScreen = () => {};
+  const handleWideScreen = () => { };
 
   return (
     <div className={classes.player}>
@@ -171,8 +228,8 @@ export default function Player(props) {
           ref={videoRef}
           onDurationChange={setTotalTime}
           onTimeUpdate={updatePlaybackDuration}
-          autoPlay={true}
-          muted={true}
+          autoPlay={false}
+          muted={false}
         />
       </div>
       <div className={classes["video-overlay"]}>
@@ -180,7 +237,7 @@ export default function Player(props) {
           <div className={classes["left"]} onDoubleClick={moveBack}></div>
           <div
             className={classes["play"]}
-            onClick={playbackToggle}
+            onClick={() => { dispatcher("playbackToggle") }}
             onDurationChange={updatePlaybackDuration}
             ref={playButtonRef}
           >
@@ -223,9 +280,9 @@ export default function Player(props) {
               <span>
                 {!isVideoOver &&
                   (isVideoPlaying && !isVideoOver ? (
-                    <Pause onClick={playbackToggle} />
+                    <Pause onClick={functionMap["playbackToggle"]} />
                   ) : (
-                    <Play onClick={playbackToggle} />
+                    <Play onClick={functionMap["playbackToggle"]} />
                   ))}
                 {isVideoOver ? (
                   <FontAwesomeIcon icon={faRotateRight} onClick={replay} />
