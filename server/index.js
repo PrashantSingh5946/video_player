@@ -1,9 +1,13 @@
 const express = require('express')
 const request = require('request')
 const WebSocket = require('ws');
+
+
 const app = express();
 
 const clients = new Set();
+
+app.use(express.static('client'));
 
 
 app.get('/', (req, res) => {
