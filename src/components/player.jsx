@@ -65,7 +65,7 @@ export default function Player(props) {
   //manage fullscreen listener
   useEffect(() => {
     document.onfullscreenchange = fullscreenchanged;
-    let ws = new WebSocket(`wss://${window.location.hostname}:8000`);
+    let ws = new WebSocket(`wss://${window.location.hostname}`);
     window.ws = ws;
     ws.addEventListener("open", () => { setSocketStatus(true); console.log("Socket open") })
 
