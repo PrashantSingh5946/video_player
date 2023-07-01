@@ -31,6 +31,11 @@ export default function Player(props) {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [socketStatus, setSocketStatus] = useState(false);
 
+  //Chat data
+
+  const [chatInput, setChatInput] = useState("");
+  const [messages, setMessages] = useState([]);
+
   function formatTime(seconds) {
     return [parseInt((seconds / 60) % 60), parseInt(seconds % 60)]
       .join(":")
@@ -40,7 +45,17 @@ export default function Player(props) {
 
   function dispatcher(event) {
 
-    emitSocketMessage({ "event": event });
+    console.log(event)
+
+    // if(event=="updatePlaybackDuration")
+    // {
+    //   emitSocketMessage({ "event": event, data: passedDuration });
+
+    //   console.log("Data dispatched")
+    //   console.log(passedDuration)
+    // }
+
+
 
     //functionMap[event]();
 
@@ -49,8 +64,10 @@ export default function Player(props) {
   const emitSocketMessage = (message) => {
 
     if (socketStatus) {
+      console.log("Emitting message")
       console.log(message)
-      window.ws.send(JSON.stringify(message));
+      let packet = JSON.stringify(message);
+      window.ws.send(packet);
     }
 
   }
@@ -64,8 +81,11 @@ export default function Player(props) {
 
   //manage fullscreen listener
   useEffect(() => {
+
+    //window.user = prompt("Please enter your name")
+
     document.onfullscreenchange = fullscreenchanged;
-    let ws = new WebSocket(`wss://${window.location.hostname}`);
+    let ws = new WebSocket(`ws://${window.location.hostname}:8000`);
     window.ws = ws;
     ws.addEventListener("open", () => { setSocketStatus(true); console.log("Socket open") })
 
@@ -73,21 +93,53 @@ export default function Player(props) {
 
     ws.addEventListener("message", (packet) => {
 
+      console.log("Server sent");
+
+      console.log(packet.data)
+
+      let message = JSON.parse(packet.data);
+
+      //if(message.hasOwnProperty("chat"))
+
+      if (message.hasOwnProperty("chat")) {
+
+        let dup_messages = JSON.parse(JSON.stringify(messages));
+        dup_messages.push(message);
+        setMessages(dup_messages)
+      }
 
 
-      packet.data.text().then((res) => {        
+      else if (message.type == "event") {
 
-        let data = JSON.parse(res);
+        let payload = {
+          ...message.payload
+        }
 
-          //Object.keys(data).indexOf("event")!= -1 ?? functionMap[data["event"]]();
+        for (let key in payload) {
+          if (payload.hasOwnProperty(key)) {
 
-          let func = functionMap[data["event"]];
+            let func = functionMap[key];
+            func(message.data);
 
-          func();
+            console.log("Invoking function " + message["event"])
+          }
+        }
 
-          console.log("Invoking function " + data["event"])
-          console.log(data)
-      })
+        console.log("Server sent")
+        console.log(message)
+
+
+
+
+      }
+
+
+
+
+
+
+
+
 
     })
 
@@ -96,12 +148,29 @@ export default function Player(props) {
 
   const functionMap = {
 
-    "playbackToggle" : () => {
+    "playbackToggle": () => {
 
       console.log("Function has been called")
       //play and pause functionality
       setVideoPlaying((isVideoPlaying) => !isVideoPlaying);
-    }
+    },
+
+
+
+    "updatePlaybackDuration": (target) => {
+      // console.log("Duration changed")
+
+      console.log(target)
+      setPassedDuration(target);
+
+
+    },
+
+    // "seek": (target) => 
+    // {
+    //     console.log("Duration changed")
+    //     setPassedDuration(target);
+    // }
 
   }
 
@@ -115,9 +184,7 @@ export default function Player(props) {
     }, 500);
   };
 
-  const updatePlaybackDuration = () => {
-    setPassedDuration(videoRef.current.currentTime);
-  };
+
 
   //handle play pause
   useEffect(() => {
@@ -220,105 +287,142 @@ export default function Player(props) {
 
   const handleWideScreen = () => { };
 
+  const handleKeypress = e => {
+    //it triggers by pressing the enter key
+    if (e.keyCode === 13) {
+      //alert("Hello")
+
+      emitSocketMessage({ chat: "", payload: { name: localStorage.getItem("name"), text: chatInput } });
+      setChatInput("");
+    }
+  };
+
   return (
-    <div className={classes.player}>
-      <div className={classes["video-wrapper"]}>
-        <video
-          src={props.url}
-          ref={videoRef}
-          onDurationChange={setTotalTime}
-          onTimeUpdate={updatePlaybackDuration}
-          autoPlay={false}
-          muted={false}
-        />
-      </div>
-      <div className={classes["video-overlay"]}>
-        <div className={classes["video-cover"]}>
-          <div className={classes["left"]} onDoubleClick={moveBack}></div>
-          <div
-            className={classes["play"]}
-            onClick={() => { dispatcher("playbackToggle") }}
-            onDurationChange={updatePlaybackDuration}
-            ref={playButtonRef}
-          >
-            <div className={classes["central-icon"]}>
-              {isVideoOver && (
-                <FontAwesomeIcon
-                  icon={faRotateRight}
-                  onClick={replay}
-                ></FontAwesomeIcon>
-              )}
-            </div>
-          </div>
-          <div className={classes["right"]} onDoubleClick={moveForward}></div>
+    <>
+      <div className={classes.player}>
+        <div></div>
+        <div className={classes["video-wrapper"]}>
+
+          <video
+            src={props.url}
+            ref={videoRef}
+            onDurationChange={setTotalTime}
+            onTimeUpdate={(event) => functionMap["updatePlaybackDuration"](event.target.currentTime)}
+            autoPlay={false}
+            muted={false}
+          />
+
         </div>
-        <div className={classes["control-bar"]}>
-          <div className={classes["progress-bar-wrapper"]} onClick={jumpToTime}>
-            <div className={classes["progress-bar"]}>
-              <div
-                className={classes.currentTime}
-                style={{
-                  width:
-                    (850 * passedDuration) / totalDuration
-                      ? (850 * passedDuration) / totalDuration
-                      : 0,
-                }}
-              ></div>
-              <div
-                className={classes.bufferedTime}
-                style={{
-                  width:
-                    (850 * bufferedDuration) / totalDuration
-                      ? (850 * bufferedDuration) / totalDuration
-                      : 0,
-                }}
-              ></div>
+        <div className={classes["video-overlay"]}>
+          <div className={classes["video-cover"]}>
+            <div className={classes["left"]} onDoubleClick={moveBack}></div>
+            <div
+              className={classes["play"]}
+              onClick={() => { dispatcher("playbackToggle") }}
+              onDurationChange={dispatcher("updatePlaybackDuration")}
+              ref={playButtonRef}
+            >
+              <div className={classes["central-icon"]}>
+                {isVideoOver && (
+                  <FontAwesomeIcon
+                    icon={faRotateRight}
+                    onClick={replay}
+                  ></FontAwesomeIcon>
+                )}
+              </div>
             </div>
+            <div className={classes["right"]} onDoubleClick={moveForward}></div>
           </div>
-          <div className={classes["icon-bar"]}>
-            <div className={classes["left-icons"]}>
-              <span>
-                {!isVideoOver &&
-                  (isVideoPlaying && !isVideoOver ? (
-                    <Pause onClick={functionMap["playbackToggle"]} />
-                  ) : (
-                    <Play onClick={functionMap["playbackToggle"]} />
-                  ))}
-                {isVideoOver ? (
-                  <FontAwesomeIcon icon={faRotateRight} onClick={replay} />
-                ) : null}
-              </span>
-              <span>
-                <Next />
-              </span>
-              <span onClick={toggleSound} style={{ padding: "6px" }}>
-                {soundStatus ? <VolumeOn /> : <Mute />}
-              </span>
-              <span className={classes.time}>
-                {formatTime(Math.floor(passedDuration))}/
-                {formatTime(Math.floor(totalDuration))}
-              </span>
+          <div className={classes["control-bar"]}>
+            <div className={classes["progress-bar-wrapper"]} onClick={jumpToTime}>
+              <div className={classes["progress-bar"]}>
+                <div
+                  className={classes.currentTime}
+                  style={{
+                    width:
+                      (850 * passedDuration) / totalDuration
+                        ? (850 * passedDuration) / totalDuration
+                        : 0,
+                  }}
+                ></div>
+                <div
+                  className={classes.bufferedTime}
+                  style={{
+                    width:
+                      (850 * bufferedDuration) / totalDuration
+                        ? (850 * bufferedDuration) / totalDuration
+                        : 0,
+                  }}
+                ></div>
+              </div>
             </div>
-            <div className={classes["right-icons"]}>
-              <span className={classes["settings"]}>
-                <SettingsLogo />
-              </span>
-              <span
-                className={classes["widescreen"]}
-                onClick={handleWideScreen}
-              >
-                <WidescreenLogo />
-              </span>
-              <span
-                className={classes["fullscreen"]}
-                onClick={handleFullScreen}
-              >
-                <FontAwesomeIcon icon={faExpand}></FontAwesomeIcon>
-              </span>
+            <div className={classes["icon-bar"]}>
+              <div className={classes["left-icons"]}>
+                <span>
+                  {!isVideoOver &&
+                    (isVideoPlaying && !isVideoOver ? (
+                      <Pause onClick={functionMap["playbackToggle"]} />
+                    ) : (
+                      <Play onClick={functionMap["playbackToggle"]} />
+                    ))}
+                  {isVideoOver ? (
+                    <FontAwesomeIcon icon={faRotateRight} onClick={replay} />
+                  ) : null}
+                </span>
+                <span>
+                  <Next />
+                </span>
+                <span onClick={toggleSound} style={{ padding: "6px" }}>
+                  {soundStatus ? <VolumeOn /> : <Mute />}
+                </span>
+                <span className={classes.time}>
+                  {formatTime(Math.floor(passedDuration))}/
+                  {formatTime(Math.floor(totalDuration))}
+                </span>
+              </div>
+              <div className={classes["right-icons"]}>
+                <span className={classes["settings"]}>
+                  <SettingsLogo />
+                </span>
+                <span
+                  className={classes["widescreen"]}
+                  onClick={handleWideScreen}
+                >
+                  <WidescreenLogo />
+                </span>
+                <span
+                  className={classes["fullscreen"]}
+                  onClick={handleFullScreen}
+                >
+                  <FontAwesomeIcon icon={faExpand}></FontAwesomeIcon>
+                </span>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+
+      <div className="chat">
+        <div className="messages">
+
+
+          {
+            messages.map((message) =>
+              <div className="message">
+                <h5>{message.payload.name}</h5>
+
+                <p>{message.payload.text}</p>
+              </div>
+            )
+          }
+
+
+        </div>
+        <div className="input">
+          <input type="text" tabIndex="0" placeholder="Message" onKeyDown={handleKeypress} value={chatInput} onChange={(e) => { setChatInput(e.target.value) }}></input>
+        </div>
+      </div>
+    </>
+
   );
 }

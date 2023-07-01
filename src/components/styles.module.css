@@ -1,6 +1,6 @@
 :root {
-  --video-height: 510px;
-  --video-width: 860px;
+  --video-height: 75vh;
+  --video-width: 80vw;
   --control-bar-height: 50px;
   --central-icon-size: 70px;
 }
@@ -10,6 +10,7 @@
   max-height: var(--video-height);
   background: #000;
   overflow: hidden;
+  width: 80vw;
 }
 
 .player video {
