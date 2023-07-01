@@ -23,7 +23,7 @@ export default function Player(props) {
 
 
   const videoRef = useRef();
-  const [isVideoPlaying, setVideoPlaying] = useState(false);
+  const [isVideoPlaying, setVideoPlaying] = useState(null);
   const playButtonRef = useRef();
   const [passedDuration, setPassedDuration] = useState(0);
   const [totalDuration, setTotalDuration] = useState(0);
@@ -32,6 +32,32 @@ export default function Player(props) {
   const [isVideoOver, setIsVideoOver] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [socketStatus, setSocketStatus] = useState(false);
+
+  //Video dimensions
+  const [videoWidth, setVideoWidth] = useState(0);
+  const [videoHeight, setVideoHeight] = useState(0);
+
+
+  useEffect(() => {
+    const resizeObserver = new ResizeObserver(entries => {
+      for (let entry of entries) {
+        const { width, height } = entry.contentRect;
+        setVideoHeight(height);
+        setVideoWidth(width);
+      }
+    });
+
+    if (videoRef.current) {
+      resizeObserver.observe(videoRef.current);
+    }
+
+    return () => {
+      if (videoRef.current) {
+        resizeObserver.unobserve(videoRef.current);
+      }
+    };
+  }, []);
+
 
   //Chat data
 
@@ -57,6 +83,11 @@ export default function Player(props) {
     //   console.log(passedDuration)
     // }
 
+    if(event=="playbackToggle")
+    {
+      emitSocketMessage({"event":event,data: !isVideoPlaying});
+    }
+
 
 
     //functionMap[event]();
@@ -66,8 +97,6 @@ export default function Player(props) {
   const emitSocketMessage = (message) => {
 
     if (socketStatus) {
-      console.log("Emitting message")
-      console.log(message)
       let packet = JSON.stringify(message);
       window.ws.send(packet);
     }
@@ -87,7 +116,7 @@ export default function Player(props) {
     //window.user = prompt("Please enter your name")
 
     document.onfullscreenchange = fullscreenchanged;
-    let ws = new WebSocket(`wss://${window.location.hostname}`);
+    let ws = new WebSocket(`ws://${window.location.hostname}:8000`);
     window.ws = ws;
     ws.addEventListener("open", () => { setSocketStatus(true); console.log("Socket open") })
 
@@ -95,9 +124,9 @@ export default function Player(props) {
 
     ws.addEventListener("message", (packet) => {
 
-      console.log("Server sent");
+      //console.log("Server sent");
 
-      console.log(packet.data)
+      //console.log(packet.data)
 
       let message = JSON.parse(packet.data);
 
@@ -106,13 +135,13 @@ export default function Player(props) {
       if (message.hasOwnProperty("chat")) {
 
 
-        
-        setMessages((messages) => [message,...messages])
+
+        setMessages((messages) => [message, ...messages])
 
       }
 
 
-      else if (message.type == "event") {
+      else if (message.hasOwnProperty("event")) {
 
         let payload = {
           ...message.payload
@@ -122,14 +151,14 @@ export default function Player(props) {
           if (payload.hasOwnProperty(key)) {
 
             let func = functionMap[key];
-            func(message.data);
+            func(payload[key]);
 
-            console.log("Invoking function " + message["event"])
+            //console.log("Invoking function " + message["event"])
           }
         }
 
-        console.log("Server sent")
-        console.log(message)
+        //console.log("Server sent")
+        //console.log(message)
 
 
 
@@ -151,11 +180,12 @@ export default function Player(props) {
 
   const functionMap = {
 
-    "playbackToggle": () => {
+    "togglePlayback": (prop) => {
 
-      console.log("Function has been called")
+      //console.log("Function has been called")
       //play and pause functionality
-      setVideoPlaying((isVideoPlaying) => !isVideoPlaying);
+      console.log(prop)
+      setVideoPlaying(prop);
     },
 
 
@@ -163,8 +193,8 @@ export default function Player(props) {
     "updatePlaybackDuration": (target) => {
       // console.log("Duration changed")
 
-      console.log(target)
-      setPassedDuration(target);
+      //console.log(target)
+      //setPassedDuration(target);
 
 
     },
@@ -179,7 +209,7 @@ export default function Player(props) {
 
   //replay functionality
   const replay = async () => {
-    console.log("Video playing");
+    //console.log("Video playing");
     setIsVideoOver(false);
     setTimeout(() => {
       videoRef.current.play();
@@ -248,7 +278,7 @@ export default function Player(props) {
       setVideoPlaying(false);
     }
     let clickpoint = e.clientX - 5;
-    let equivalentDuration = (clickpoint / 850) * totalDuration;
+    let equivalentDuration = (clickpoint / videoWidth) * totalDuration;
     videoRef.current.currentTime = equivalentDuration;
   };
 
@@ -266,23 +296,24 @@ export default function Player(props) {
     }
   };
 
-  useEffect(() => {
-    if (isFullScreen) {
-      document.documentElement.requestFullscreen();
-      var r = document.querySelector(":root");
-      // Set the value of variable --blue to another value (in this case "lightblue")
-      r.style.setProperty("--video-height", window.screen.height);
-      r.style.setProperty("--video-width", window.screen.width);
-    } else if (totalDuration) {
-      var r = document.querySelector(":root");
-      // Set the value of variable --blue to another value (in this case "lightblue")
-      r.style.setProperty("--video-height", "510px");
-      r.style.setProperty("--video-width", "860px");
-      if (document.fullscreenElement) {
-        document.exitFullscreen();
-      }
-    }
-  }, [isFullScreen]);
+  // useEffect(() => {
+
+  //   if (isFullScreen) {
+  //     document.documentElement.requestFullscreen();
+  //     var r = document.querySelector(":root");
+  //     // Set the value of variable --blue to another value (in this case "lightblue")
+  //     r.style.setProperty("--video-height", window.screen.height);
+  //     r.style.setProperty("--video-width", window.screen.width);
+  //   } else if (totalDuration) {
+  //     var r = document.querySelector(":root");
+  //     // Set the value of variable --blue to another value (in this case "lightblue")
+  //     r.style.setProperty("--video-height", "510px");
+  //     r.style.setProperty("--video-width", "860px");
+  //     if (document.fullscreenElement) {
+  //       document.exitFullscreen();
+  //     }
+  //   }
+  // }, [isFullScreen]);
 
   const handleFullScreen = () => {
     setIsFullScreen(!isFullScreen);
@@ -310,9 +341,8 @@ export default function Player(props) {
             src={props.url}
             ref={videoRef}
             onDurationChange={setTotalTime}
-            onTimeUpdate={(event) => functionMap["updatePlaybackDuration"](event.target.currentTime)}
+            onTimeUpdate={(e) => { setPassedDuration(e.target.currentTime)}}
             autoPlay={false}
-            muted={false}
           />
 
         </div>
@@ -321,30 +351,34 @@ export default function Player(props) {
             <div className={classes["left"]} onDoubleClick={moveBack}></div>
             <div
               className={classes["play"]}
-              onClick={() => { dispatcher("playbackToggle") }}
-              onDurationChange={dispatcher("updatePlaybackDuration")}
+
+              // onClick={() => { dispatcher("playbackToggle") }}
+
+              // onDurationChange={dispatcher("updatePlaybackDuration")}
+
               ref={playButtonRef}
             >
-              <div className={classes["central-icon"]}>
+              {/* <div className={classes["central-icon"]}>
                 {isVideoOver && (
                   <FontAwesomeIcon
                     icon={faRotateRight}
                     onClick={replay}
                   ></FontAwesomeIcon>
                 )}
-              </div>
+              </div> */}
             </div>
             <div className={classes["right"]} onDoubleClick={moveForward}></div>
           </div>
           <div className={classes["control-bar"]}>
             <div className={classes["progress-bar-wrapper"]} onClick={jumpToTime}>
+
               <div className={classes["progress-bar"]}>
                 <div
                   className={classes.currentTime}
                   style={{
                     width:
-                      (850 * passedDuration) / totalDuration
-                        ? (850 * passedDuration) / totalDuration
+                      (videoWidth * passedDuration) / totalDuration
+                        ? (videoWidth * passedDuration) / totalDuration
                         : 0,
                   }}
                 ></div>
@@ -352,25 +386,26 @@ export default function Player(props) {
                   className={classes.bufferedTime}
                   style={{
                     width:
-                      (850 * bufferedDuration) / totalDuration
-                        ? (850 * bufferedDuration) / totalDuration
+                      (videoWidth * bufferedDuration) / totalDuration
+                        ? (videoWidth * bufferedDuration) / totalDuration
                         : 0,
                   }}
                 ></div>
               </div>
+
             </div>
             <div className={classes["icon-bar"]}>
               <div className={classes["left-icons"]}>
                 <span>
                   {!isVideoOver &&
                     (isVideoPlaying && !isVideoOver ? (
-                      <Pause onClick={functionMap["playbackToggle"]} />
+                      <Pause onClick={() => dispatcher("playbackToggle")}  />
                     ) : (
-                      <Play onClick={functionMap["playbackToggle"]} />
+                      <Play onClick={() => dispatcher("playbackToggle")} />
                     ))}
-                  {isVideoOver ? (
+                  {/* {isVideoOver ? (
                     <FontAwesomeIcon icon={faRotateRight} onClick={replay} />
-                  ) : null}
+                  ) : null} */}
                 </span>
                 <span>
                   <Next />
@@ -384,7 +419,7 @@ export default function Player(props) {
                 </span>
               </div>
               <div className={classes["right-icons"]}>
-                <span className={classes["settings"]}>
+                {/* <span className={classes["settings"]}>
                   <SettingsLogo />
                 </span>
                 <span
@@ -398,7 +433,7 @@ export default function Player(props) {
                   onClick={handleFullScreen}
                 >
                   <FontAwesomeIcon icon={faExpand}></FontAwesomeIcon>
-                </span>
+                </span> */}
               </div>
             </div>
           </div>
@@ -421,8 +456,8 @@ export default function Player(props) {
 
 
         </div>
-        <div className="input">
-          <input type="text" tabIndex="0" placeholder="Message" onKeyDown={handleKeypress} value={chatInput} onChange={(e) => { setChatInput(e.target.value) }}></input>
+        <div className="input" >
+          <input type="text" tabIndex="0" placeholder="Message" onKeyDown={handleKeypress} value={chatInput} onChange={(e) => { setChatInput(e.target.value) }} style={{"maxWidth":"90% !important"}}></input>
         </div>
       </div>
     </>

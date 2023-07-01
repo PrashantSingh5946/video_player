@@ -48,13 +48,8 @@
 .chat .messages
 {
   padding: 0px;
-  overflow: scroll;
+  overflow-y: auto;
   display: flex;
   flex-direction: column-reverse;
 }
 
-.chat .messages .message
-{
-  background: white;
-  margin: 5px;
-}

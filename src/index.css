@@ -5,6 +5,9 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  background: linear-gradient(0deg, #1E2C3D 00%, #3E364E 100%);
+
 }
 
 code {
@@ -53,7 +56,8 @@ code {
 
 }
 
-.form input, .chat input {
+.form input,
+.chat input {
   font-size: 16px;
   line-height: 28px;
   padding: 8px 16px;
@@ -67,7 +71,8 @@ code {
   margin: 20px;
 }
 
-.form input[type="submit"], .chat input[type="submit"] {
+.form input[type="submit"],
+.chat input[type="submit"] {
   background-color: rgb(84, 105, 212);
   box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.12) 0px 1px 1px 0px, rgb(84, 105, 212) 0px 0px 0px 1px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(60, 66, 87, 0.08) 0px 2px 5px 0px;
   color: #fff;
@@ -76,14 +81,45 @@ code {
 }
 
 
-.chat
-{
+.chat {
+  z-index: 10;
   height: 100vh;
-  background: red;
+
   width: 20vw;
+ 
+  background: linear-gradient(0deg, #1E2C3D 00%, #3E364E 100%);
+
 }
 
-.chat .messages
-{
-  height: -webkit-fill-available;;
+.chat .messages {
+  height: -webkit-fill-available;
+  padding: 0
+}
+
+.chat .messages .message {
+  margin: 5px;
+  border-radius: 5px;
+  background: beige;
+  padding: 5px;
+
+  padding: 0.5em 1em;
+  background: linear-gradient(40deg, rgba(255, 255, 255, 0.2) 00%, rgba(255, 255, 255, 0.3) 100%);
+  border-radius: 3px;
+  box-shadow: 0 5px 30px rgba(255, 255, 255, 0.1);
+  margin-bottom: 10px;
+  color: rgba(255, 255, 255, 0.7);
+  word-wrap: break-word;
+  font-size: 1em;
+  margin-top: 5px;
+  opacity: 1;
+}
+
+.chat .messages .message h5,
+p {
+  margin: 0
+}
+
+.chat .messages .message p {
+  font-size: small;
+  margin-top: 5px;
 }

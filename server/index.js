@@ -31,7 +31,7 @@ wss.on('connection', (ws) => {
 
     clients.add(ws)
 
-    ws.send(JSON.stringify({type:"event", payload: state}))
+    //ws.send(JSON.stringify({type:"event", payload: state}))
 
     ws.on('message', async (event) => {       
         // Process the message as needed
@@ -69,19 +69,21 @@ const handleMessage = (passedMessage) => {
 
         if(payload.event == "updatePlaybackDuration")
         {
-            state.updatePlaybackDuration < payload.data ? state.updatePlaybackDuration = payload.data : null;
+            //state.updatePlaybackDuration < payload.data ? state.updatePlaybackDuration = payload.data : null;
         }
 
         if(payload.event == "seek")
         {
             state.updatePlaybackDuration = payload.data
 
-            sendToAllClients(JSON.stringify({type:"event", payload: {"updatePlaybackDuration": message.data}}))
+            //sendToAllClients(JSON.stringify({type:"event", payload: {"updatePlaybackDuration": message.data}}))
         }
 
         else if(payload.event == "playbackToggle")
         {
-            state.playbackToggle = payload.playbackToggle
+            state.playbackToggle = payload.data;
+            sendToAllClients(JSON.stringify({"event":"", payload: {"togglePlayback": message.data}}))
+
         }
 
        //sendToAllClients({type:"event", payload: state})
@@ -89,7 +91,7 @@ const handleMessage = (passedMessage) => {
 
     }
 
-    
+
 
 }
 
