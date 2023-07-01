@@ -1,5 +1,6 @@
 .App {
   display: flex;
+  justify-content: center;
 }
 
 .App-logo {
@@ -46,7 +47,10 @@
 
 .chat .messages
 {
-  padding: 10px
+  padding: 0px;
+  overflow: scroll;
+  display: flex;
+  flex-direction: column-reverse;
 }
 
 .chat .messages .message

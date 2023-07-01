@@ -20,6 +20,8 @@ import {
 import classes from "./styles.module.css";
 
 export default function Player(props) {
+
+
   const videoRef = useRef();
   const [isVideoPlaying, setVideoPlaying] = useState(false);
   const playButtonRef = useRef();
@@ -85,7 +87,7 @@ export default function Player(props) {
     //window.user = prompt("Please enter your name")
 
     document.onfullscreenchange = fullscreenchanged;
-    let ws = new WebSocket(`ws://${window.location.hostname}:8000`);
+    let ws = new WebSocket(`wss://${window.location.hostname}`);
     window.ws = ws;
     ws.addEventListener("open", () => { setSocketStatus(true); console.log("Socket open") })
 
@@ -103,9 +105,10 @@ export default function Player(props) {
 
       if (message.hasOwnProperty("chat")) {
 
-        let dup_messages = JSON.parse(JSON.stringify(messages));
-        dup_messages.push(message);
-        setMessages(dup_messages)
+
+        
+        setMessages((messages) => [message,...messages])
+
       }
 
 

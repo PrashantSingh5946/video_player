@@ -1,5 +1,5 @@
 :root {
-  --video-height: 75vh;
+  --video-height: 80vh;
   --video-width: 80vw;
   --control-bar-height: 50px;
   --central-icon-size: 70px;
@@ -11,6 +11,7 @@
   background: #000;
   overflow: hidden;
   width: 80vw;
+  height: 100%;
 }
 
 .player video {
