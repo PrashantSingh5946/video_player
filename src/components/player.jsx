@@ -20,8 +20,6 @@ import {
 import classes from "./styles.module.css";
 
 export default function Player(props) {
-
-
   const videoRef = useRef();
   const [isVideoPlaying, setVideoPlaying] = useState(null);
   const playButtonRef = useRef();
@@ -37,9 +35,8 @@ export default function Player(props) {
   const [videoWidth, setVideoWidth] = useState(0);
   const [videoHeight, setVideoHeight] = useState(0);
 
-
   useEffect(() => {
-    const resizeObserver = new ResizeObserver(entries => {
+    const resizeObserver = new ResizeObserver((entries) => {
       for (let entry of entries) {
         const { width, height } = entry.contentRect;
         setVideoHeight(height);
@@ -58,7 +55,6 @@ export default function Player(props) {
     };
   }, []);
 
-
   //Chat data
 
   const [chatInput, setChatInput] = useState("");
@@ -70,39 +66,30 @@ export default function Player(props) {
       .replace(/\b(\d)\b/g, "0$1");
   }
 
-
   function dispatcher(event) {
-
-    console.log(event)
+    console.log(event);
 
     // if(event=="updatePlaybackDuration")
     // {
     //   emitSocketMessage({ "event": event, data: passedDuration });
 
-    //   console.log("Data dispatched")
-    //   console.log(passedDuration)
+    console.log("Data dispatched");
+    console.log(passedDuration);
     // }
 
-    if(event=="playbackToggle")
-    {
-      emitSocketMessage({"event":event,data: !isVideoPlaying});
+    if (event == "playbackToggle") {
+      emitSocketMessage({ event: event, data: !isVideoPlaying });
     }
 
-
-
     //functionMap[event]();
-
   }
 
   const emitSocketMessage = (message) => {
-
     if (socketStatus) {
       let packet = JSON.stringify(message);
       window.ws.send(packet);
     }
-
-  }
-
+  };
 
   const fullscreenchanged = (event) => {
     if (!document.fullscreenElement) {
@@ -112,44 +99,39 @@ export default function Player(props) {
 
   //manage fullscreen listener
   useEffect(() => {
-
     //window.user = prompt("Please enter your name")
 
     document.onfullscreenchange = fullscreenchanged;
     let ws = new WebSocket(`wss://${window.location.hostname}`);
     window.ws = ws;
-    ws.addEventListener("open", () => { setSocketStatus(true); console.log("Socket open") })
+    ws.addEventListener("open", () => {
+      setSocketStatus(true);
+      console.log("Socket open");
+    });
 
-    ws.addEventListener("close", () => { setSocketStatus(false); console.log("Socket closed") })
+    ws.addEventListener("close", () => {
+      setSocketStatus(false);
+      console.log("Socket closed");
+    });
 
     ws.addEventListener("message", (packet) => {
+      console.log("Server sent");
 
-      //console.log("Server sent");
-
-      //console.log(packet.data)
+      console.log(packet.data);
 
       let message = JSON.parse(packet.data);
 
       //if(message.hasOwnProperty("chat"))
 
       if (message.hasOwnProperty("chat")) {
-
-
-
-        setMessages((messages) => [message, ...messages])
-
-      }
-
-
-      else if (message.hasOwnProperty("event")) {
-
+        setMessages((messages) => [message, ...messages]);
+      } else if (message.hasOwnProperty("event")) {
         let payload = {
-          ...message.payload
-        }
+          ...message.payload,
+        };
 
         for (let key in payload) {
           if (payload.hasOwnProperty(key)) {
-
             let func = functionMap[key];
             func(payload[key]);
 
@@ -159,53 +141,30 @@ export default function Player(props) {
 
         //console.log("Server sent")
         //console.log(message)
-
-
-
-
       }
-
-
-
-
-
-
-
-
-
-    })
-
-
+    });
   }, []);
 
   const functionMap = {
-
-    "togglePlayback": (prop) => {
-
+    togglePlayback: (prop) => {
       //console.log("Function has been called")
       //play and pause functionality
-      console.log(prop)
+      console.log(prop);
       setVideoPlaying(prop);
     },
 
-
-
-    "updatePlaybackDuration": (target) => {
+    updatePlaybackDuration: (target) => {
       // console.log("Duration changed")
-
       //console.log(target)
       //setPassedDuration(target);
-
-
     },
 
-    // "seek": (target) => 
+    // "seek": (target) =>
     // {
     //     console.log("Duration changed")
     //     setPassedDuration(target);
     // }
-
-  }
+  };
 
   //replay functionality
   const replay = async () => {
@@ -217,8 +176,6 @@ export default function Player(props) {
     }, 500);
   };
 
-
-
   //handle play pause
   useEffect(() => {
     if (isVideoPlaying) {
@@ -227,7 +184,6 @@ export default function Player(props) {
       videoRef.current.pause();
     }
   }, [isVideoPlaying]);
-
 
   //move time left and write
   const moveBack = () => {
@@ -238,7 +194,6 @@ export default function Player(props) {
     }
   };
 
-
   const moveForward = () => {
     if (videoRef.current.currentTime + 5 < videoRef.current.duration) {
       videoRef.current.currentTime = videoRef.current.currentTime + 5;
@@ -246,7 +201,6 @@ export default function Player(props) {
       videoRef.current.currentTime = videoRef.current.duration;
     }
   };
-
 
   //update time on play
   const setTotalTime = () => {
@@ -319,14 +273,17 @@ export default function Player(props) {
     setIsFullScreen(!isFullScreen);
   };
 
-  const handleWideScreen = () => { };
+  const handleWideScreen = () => {};
 
-  const handleKeypress = e => {
+  const handleKeypress = (e) => {
     //it triggers by pressing the enter key
     if (e.keyCode === 13) {
       //alert("Hello")
 
-      emitSocketMessage({ chat: "", payload: { name: localStorage.getItem("name"), text: chatInput } });
+      emitSocketMessage({
+        chat: "",
+        payload: { name: localStorage.getItem("name"), text: chatInput },
+      });
       setChatInput("");
     }
   };
@@ -336,22 +293,21 @@ export default function Player(props) {
       <div className={classes.player}>
         <div></div>
         <div className={classes["video-wrapper"]}>
-
           <video
             src={props.url}
             ref={videoRef}
             onDurationChange={setTotalTime}
-            onTimeUpdate={(e) => { setPassedDuration(e.target.currentTime)}}
+            onTimeUpdate={(e) => {
+              setPassedDuration(e.target.currentTime);
+            }}
             autoPlay={false}
           />
-
         </div>
         <div className={classes["video-overlay"]}>
           <div className={classes["video-cover"]}>
             <div className={classes["left"]} onDoubleClick={moveBack}></div>
             <div
               className={classes["play"]}
-
               // onClick={() => { dispatcher("playbackToggle") }}
 
               // onDurationChange={dispatcher("updatePlaybackDuration")}
@@ -370,8 +326,10 @@ export default function Player(props) {
             <div className={classes["right"]} onDoubleClick={moveForward}></div>
           </div>
           <div className={classes["control-bar"]}>
-            <div className={classes["progress-bar-wrapper"]} onClick={jumpToTime}>
-
+            <div
+              className={classes["progress-bar-wrapper"]}
+              onClick={jumpToTime}
+            >
               <div className={classes["progress-bar"]}>
                 <div
                   className={classes.currentTime}
@@ -392,14 +350,13 @@ export default function Player(props) {
                   }}
                 ></div>
               </div>
-
             </div>
             <div className={classes["icon-bar"]}>
               <div className={classes["left-icons"]}>
                 <span>
                   {!isVideoOver &&
                     (isVideoPlaying && !isVideoOver ? (
-                      <Pause onClick={() => dispatcher("playbackToggle")}  />
+                      <Pause onClick={() => dispatcher("playbackToggle")} />
                     ) : (
                       <Play onClick={() => dispatcher("playbackToggle")} />
                     ))}
@@ -442,25 +399,28 @@ export default function Player(props) {
 
       <div className="chat">
         <div className="messages">
+          {messages.map((message) => (
+            <div className="message">
+              <h5>{message.payload.name}</h5>
 
-
-          {
-            messages.map((message) =>
-              <div className="message">
-                <h5>{message.payload.name}</h5>
-
-                <p>{message.payload.text}</p>
-              </div>
-            )
-          }
-
-
+              <p>{message.payload.text}</p>
+            </div>
+          ))}
         </div>
-        <div className="input" >
-          <input type="text" tabIndex="0" placeholder="Message" onKeyDown={handleKeypress} value={chatInput} onChange={(e) => { setChatInput(e.target.value) }} style={{"maxWidth":"90% !important"}}></input>
+        <div className="input">
+          <input
+            type="text"
+            tabIndex="0"
+            placeholder="Message"
+            onKeyDown={handleKeypress}
+            value={chatInput}
+            onChange={(e) => {
+              setChatInput(e.target.value);
+            }}
+            style={{ maxWidth: "90% !important" }}
+          ></input>
         </div>
       </div>
     </>
-
   );
 }
