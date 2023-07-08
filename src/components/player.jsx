@@ -102,7 +102,13 @@ export default function Player(props) {
     //window.user = prompt("Please enter your name")
 
     document.onfullscreenchange = fullscreenchanged;
-    let ws = new WebSocket(`wss://${window.location.hostname}`);
+
+    console.log(process.env);
+    let ws = new WebSocket(
+      process.env["NODE_ENV"] == "development"
+        ? `ws://${window.location.hostname}:8000`
+        : `wss://${window.location.host}`
+    );
     window.ws = ws;
     ws.addEventListener("open", () => {
       setSocketStatus(true);
