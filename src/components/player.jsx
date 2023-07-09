@@ -105,7 +105,7 @@ export default function Player(props) {
 
     console.log(process.env);
     let ws = new WebSocket(
-      process.env["NODE_ENV"] == "development"
+      window.location.protocol == "http:"
         ? `ws://${window.location.hostname}:8000`
         : `wss://${window.location.host}`
     );

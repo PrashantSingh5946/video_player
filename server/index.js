@@ -1,29 +1,23 @@
 const express = require("express");
 const request = require("request");
 const WebSocket = require("ws");
+const path = require("path");
+const fs = require("fs");
 
 const app = express();
 
 const clients = new Set();
 
-app.use(express.static("client"));
-
-const state = {
-  playbackToggle: false,
-  updatePlaybackDuration: 0,
-};
-
-app.get("/", (req, res) => {
-  res.send("Yeah!!");
-});
-
-app.get("/videos", function (req, res) {
+app.get("/stream", function (req, res) {
   const range = req.headers.range;
   if (!range) {
     res.status(400).send("Requires Range header");
   }
-  const videoPath = "./files/videos/video.mp4";
-  const videoSize = fs.statSync("video.mp4").size;
+  const videoPath = path.join(__dirname, "files/videos/video.mp4");
+
+  console.log(videoPath);
+
+  const videoSize = fs.statSync(videoPath).size;
   const CHUNK_SIZE = 10 ** 6;
   const start = Number(range.replace(/\D/g, ""));
   const end = Math.min(start + CHUNK_SIZE, videoSize - 1);
@@ -38,6 +32,18 @@ app.get("/videos", function (req, res) {
   const videoStream = fs.createReadStream(videoPath, { start, end });
   videoStream.pipe(res);
 });
+
+app.use(express.static(path.join(__dirname, "client")));
+
+// Catchall route to serve the index.html file
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "client", "index.html"));
+});
+
+const state = {
+  playbackToggle: false,
+  updatePlaybackDuration: 0,
+};
 
 const server = app.listen(8000, () => {
   console.log("Server running");
@@ -62,6 +68,8 @@ wss.on("connection", (ws) => {
     console.log("WebSocket connection closed");
   });
 });
+
+wss.on("error", (err) => console.log(err));
 
 const sendToAllClients = (message) => {
   clients.forEach((client) => {
