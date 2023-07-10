@@ -61,7 +61,11 @@ export default function Player(props) {
   const [messages, setMessages] = useState([]);
 
   function formatTime(seconds) {
-    return [parseInt((seconds / 60) % 60), parseInt(seconds % 60)]
+    return [
+      parseInt((seconds / 3600) % 3600),
+      parseInt((seconds / 60) % 60),
+      parseInt(seconds % 60),
+    ]
       .join(":")
       .replace(/\b(\d)\b/g, "0$1");
   }
@@ -118,6 +122,10 @@ export default function Player(props) {
     ws.addEventListener("close", () => {
       setSocketStatus(false);
       console.log("Socket closed");
+    });
+
+    ws.addEventListener("error", (err) => {
+      console.log(err);
     });
 
     ws.addEventListener("message", (packet) => {
