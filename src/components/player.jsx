@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import EmojiPicker from "emoji-picker-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ReactComponent as WidescreenLogo } from "./svg/widescreen.svg";
 import { ReactComponent as SettingsLogo } from "./svg/settings.svg";
@@ -32,6 +33,7 @@ export default function Player(props) {
   const [isVideoOver, setIsVideoOver] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [socketStatus, setSocketStatus] = useState(false);
+  const [isSmileDrawerOpen, setisSmileDrawerOpen] = useState(false);
 
   //Video dimensions
   const [videoWidth, setVideoWidth] = useState(0);
@@ -46,7 +48,7 @@ export default function Player(props) {
         setVideoWidth(width);
         //Set css vars
         var r = document.querySelector(':root');
-        r.style.setProperty('--video-height', height+"px");
+        r.style.setProperty('--video-height', height + "px");
         console.log("Setting height");
 
       }
@@ -297,7 +299,7 @@ export default function Player(props) {
     setIsFullScreen(!isFullScreen);
   };
 
-  const handleWideScreen = () => {};
+  const handleWideScreen = () => { };
 
   const handleKeypress = (e) => {
     //it triggers by pressing the enter key
@@ -432,17 +434,24 @@ export default function Player(props) {
           ))}
         </div>
         <div className="input">
-          <input
-            type="text"
-            tabIndex="0"
-            placeholder="Message"
-            onKeyDown={handleKeypress}
-            value={chatInput}
-            onChange={(e) => {
-              setChatInput(e.target.value);
-            }}
-            style={{ maxWidth: "90% !important" }}
-          ></input>
+          <div className="row" >
+            <input
+              type="text"
+              tabIndex="0"
+              placeholder="Message"
+              onKeyDown={handleKeypress}
+              value={chatInput}
+              onChange={(e) => {
+                setChatInput(e.target.value);
+              }}
+              style={{ maxWidth: "90% !important" }}
+            ></input>
+            <div id="smileToggle" onClick={()=>{setisSmileDrawerOpen((status) => !status)}}>
+              <img src="smile.png"></img>
+            </div>
+          </div>
+
+          {isSmileDrawerOpen && <EmojiPicker onEmojiClick={(emoji, mouse_event) => setChatInput((chatInput) => chatInput + emoji.emoji)} />}
         </div>
       </div>
     </>
