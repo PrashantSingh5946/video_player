@@ -20,6 +20,8 @@ import {
 import classes from "./styles.module.css";
 
 export default function Player(props) {
+
+  const socketRef = useRef();
   const videoRef = useRef();
   const [isVideoPlaying, setVideoPlaying] = useState(null);
   const playButtonRef = useRef();
@@ -36,11 +38,17 @@ export default function Player(props) {
   const [videoHeight, setVideoHeight] = useState(0);
 
   useEffect(() => {
+
     const resizeObserver = new ResizeObserver((entries) => {
       for (let entry of entries) {
         const { width, height } = entry.contentRect;
         setVideoHeight(height);
         setVideoWidth(width);
+        //Set css vars
+        var r = document.querySelector(':root');
+        r.style.setProperty('--video-height', height+"px");
+        console.log("Setting height");
+
       }
     });
 
@@ -91,7 +99,7 @@ export default function Player(props) {
   const emitSocketMessage = (message) => {
     if (socketStatus) {
       let packet = JSON.stringify(message);
-      window.ws.send(packet);
+      socketRef.current.send(packet);
     }
   };
 
@@ -113,7 +121,6 @@ export default function Player(props) {
         ? `ws://${window.location.hostname}:8000`
         : `wss://${window.location.host}`
     );
-    window.ws = ws;
     ws.addEventListener("open", () => {
       setSocketStatus(true);
       console.log("Socket open");
@@ -157,6 +164,9 @@ export default function Player(props) {
         //console.log(message)
       }
     });
+
+    socketRef.current = ws;
+
   }, []);
 
   const functionMap = {

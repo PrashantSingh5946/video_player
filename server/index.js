@@ -18,6 +18,8 @@ app.get("/stream", function (req, res) {
   console.log(videoPath);
 
   const videoSize = fs.statSync(videoPath).size;
+
+  
   const CHUNK_SIZE = 10 ** 6;
   const start = Number(range.replace(/\D/g, ""));
   const end = Math.min(start + CHUNK_SIZE, videoSize - 1);
@@ -78,7 +80,9 @@ const sendToAllClients = (message) => {
 };
 
 const handleMessage = (passedMessage) => {
-  let message = JSON.parse(passedMessage);
+
+  try{
+let message = JSON.parse(passedMessage);
 
   console.log(message);
 
@@ -106,6 +110,12 @@ const handleMessage = (passedMessage) => {
 
     //sendToAllClients({type:"event", payload: state})
   }
+  }
+  catch(err)
+  {
+    console.log(err);
+  }
+  
 };
 
 //Schema
