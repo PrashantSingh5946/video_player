@@ -19,7 +19,6 @@ app.get("/stream", function (req, res) {
 
   const videoSize = fs.statSync(videoPath).size;
 
-  
   const CHUNK_SIZE = 10 ** 6;
   const start = Number(range.replace(/\D/g, ""));
   const end = Math.min(start + CHUNK_SIZE, videoSize - 1);
@@ -80,42 +79,57 @@ const sendToAllClients = (message) => {
 };
 
 const handleMessage = (passedMessage) => {
+  try {
+    let message = JSON.parse(passedMessage);
 
-  try{
-let message = JSON.parse(passedMessage);
+    console.log(message);
 
-  console.log(message);
+    if (message.hasOwnProperty("chat")) {
+      sendToAllClients(passedMessage);
+    } else if (message.hasOwnProperty("event")) {
+      let payload = {
+        ...message,
+      };
 
-  if (message.hasOwnProperty("chat")) {
-    sendToAllClients(passedMessage);
-  } else if (message.hasOwnProperty("event")) {
-    let payload = {
-      ...message,
-    };
+      if (payload.event == "updatePlaybackDuration") {
+        //state.updatePlaybackDuration < payload.data ? state.updatePlaybackDuration = payload.data : null;
+      }
 
-    if (payload.event == "updatePlaybackDuration") {
-      //state.updatePlaybackDuration < payload.data ? state.updatePlaybackDuration = payload.data : null;
+      if (payload.event == "seek") {
+        state.updatePlaybackDuration = payload.data;
+
+        //sendToAllClients(JSON.stringify({type:"event", payload: {"updatePlaybackDuration": message.data}}))
+      } else if (payload.event == "playbackToggle") {
+        state.playbackToggle = payload.data;
+        sendToAllClients(
+          JSON.stringify({
+            event: "",
+            payload: { togglePlayback: message.data },
+          })
+        );
+      }
+
+      //sendToAllClients({type:"event", payload: state})
+    } else if (message.hasOwnProperty("seek")) {
+      let chat = {
+        chat: "",
+        payload: {
+          name: "",
+          text: "",
+        },
+      };
+
+      chat.payload.name = "";
+      chat.payload.text = `${
+        message.initiator
+      } seeked the video to ${message.seek.toFixed(1)} s`;
+
+      sendToAllClients(JSON.stringify(chat));
+      sendToAllClients(JSON.stringify(message));
     }
-
-    if (payload.event == "seek") {
-      state.updatePlaybackDuration = payload.data;
-
-      //sendToAllClients(JSON.stringify({type:"event", payload: {"updatePlaybackDuration": message.data}}))
-    } else if (payload.event == "playbackToggle") {
-      state.playbackToggle = payload.data;
-      sendToAllClients(
-        JSON.stringify({ event: "", payload: { togglePlayback: message.data } })
-      );
-    }
-
-    //sendToAllClients({type:"event", payload: state})
-  }
-  }
-  catch(err)
-  {
+  } catch (err) {
     console.log(err);
   }
-  
 };
 
 //Schema

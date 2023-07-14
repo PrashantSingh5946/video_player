@@ -110,11 +110,35 @@ export default function Player(props) {
 
   //manage fullscreen listener
   useEffect(() => {
-    //window.user = prompt("Please enter your name")
+    generateSocket();
 
+    let counter = 0;
+
+    socketRef.current.onclose = async () => {
+      console.log("Trying to reconnect");
+      if (socketRef.current.readyStatus == 0) {
+        await new Promise((resolve) =>
+          setTimeout(() => generateSocket(), 5000)
+        );
+      } else {
+        await new Promise((resolve) =>
+          setTimeout(() => generateSocket(), 2000)
+        );
+      }
+    };
+
+    socketRef.current.onerror = async () => {
+      if (socketRef.current.status != 1 || socketRef.current.status != 0) {
+        console.log("Trying to reconnect");
+        await new Promise((resolve) =>
+          setTimeout(() => generateSocket(), 5000)
+        );
+      }
+    };
+  }, []);
+
+  const generateSocket = () => {
     document.onfullscreenchange = fullscreenchanged;
-
-    console.log(process.env);
     let ws = new WebSocket(
       window.location.protocol == "http:"
         ? `ws://${window.location.hostname}:8000`
@@ -122,10 +146,10 @@ export default function Player(props) {
     );
     ws.addEventListener("open", () => {
       setSocketStatus(true);
-      setTimeout(() => {
+      setInterval(() => {
         ws.send('{ "ping" : "1" }');
         console.log("Pinging");
-      }, 5000);
+      }, 1000);
       console.log("Socket open");
     });
 
@@ -162,14 +186,14 @@ export default function Player(props) {
             //console.log("Invoking function " + message["event"])
           }
         }
-
-        //console.log("Server sent")
-        //console.log(message)
+      } else if (message.hasOwnProperty("seek")) {
+        console.log(message);
+        videoRef.current.currentTime = message.seek;
       }
     });
 
     socketRef.current = ws;
-  }, []);
+  };
 
   const functionMap = {
     togglePlayback: (prop) => {
@@ -257,9 +281,18 @@ export default function Player(props) {
       setIsVideoOver(false);
       setVideoPlaying(false);
     }
+
     let clickpoint = e.clientX - 5;
     let equivalentDuration = (clickpoint / videoWidth) * totalDuration;
-    videoRef.current.currentTime = equivalentDuration;
+
+    //Send an event with the seek stamp
+
+    let newObj = {
+      seek: equivalentDuration,
+      initiator: localStorage.getItem("name"),
+    };
+
+    emitSocketMessage(newObj);
   };
 
   useEffect(() => {
