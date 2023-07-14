@@ -136,7 +136,7 @@ const handleMessage = (passedMessage) => {
 const convertSecondsToHMS = (seconds) => {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
-  const remainingSeconds = seconds % 60;
+  const remainingSeconds = (seconds % 60).toFixed(0);
 
   return (
     hours + " hours, " + minutes + " minutes, " + remainingSeconds + " seconds"
