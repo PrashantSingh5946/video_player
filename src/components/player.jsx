@@ -21,7 +21,6 @@ import {
 import classes from "./styles.module.css";
 
 export default function Player(props) {
-
   const socketRef = useRef();
   const videoRef = useRef();
   const [isVideoPlaying, setVideoPlaying] = useState(null);
@@ -40,17 +39,15 @@ export default function Player(props) {
   const [videoHeight, setVideoHeight] = useState(0);
 
   useEffect(() => {
-
     const resizeObserver = new ResizeObserver((entries) => {
       for (let entry of entries) {
         const { width, height } = entry.contentRect;
         setVideoHeight(height);
         setVideoWidth(width);
         //Set css vars
-        var r = document.querySelector(':root');
-        r.style.setProperty('--video-height', height + "px");
+        var r = document.querySelector(":root");
+        r.style.setProperty("--video-height", height + "px");
         console.log("Setting height");
-
       }
     });
 
@@ -125,6 +122,10 @@ export default function Player(props) {
     );
     ws.addEventListener("open", () => {
       setSocketStatus(true);
+      setTimeout(() => {
+        ws.send('{ "ping" : "1" }');
+        console.log("Pinging");
+      }, 5000);
       console.log("Socket open");
     });
 
@@ -168,7 +169,6 @@ export default function Player(props) {
     });
 
     socketRef.current = ws;
-
   }, []);
 
   const functionMap = {
@@ -299,7 +299,7 @@ export default function Player(props) {
     setIsFullScreen(!isFullScreen);
   };
 
-  const handleWideScreen = () => { };
+  const handleWideScreen = () => {};
 
   const handleKeypress = (e) => {
     //it triggers by pressing the enter key
@@ -434,7 +434,7 @@ export default function Player(props) {
           ))}
         </div>
         <div className="input">
-          <div className="row" >
+          <div className="row">
             <input
               type="text"
               tabIndex="0"
@@ -446,12 +446,23 @@ export default function Player(props) {
               }}
               style={{ maxWidth: "90% !important" }}
             ></input>
-            <div id="smileToggle" onClick={()=>{setisSmileDrawerOpen((status) => !status)}}>
+            <div
+              id="smileToggle"
+              onClick={() => {
+                setisSmileDrawerOpen((status) => !status);
+              }}
+            >
               <img src="smile.png"></img>
             </div>
           </div>
 
-          {isSmileDrawerOpen && <EmojiPicker onEmojiClick={(emoji, mouse_event) => setChatInput((chatInput) => chatInput + emoji.emoji)} />}
+          {isSmileDrawerOpen && (
+            <EmojiPicker
+              onEmojiClick={(emoji, mouse_event) =>
+                setChatInput((chatInput) => chatInput + emoji.emoji)
+              }
+            />
+          )}
         </div>
       </div>
     </>
