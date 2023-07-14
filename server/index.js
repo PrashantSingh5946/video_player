@@ -123,7 +123,7 @@ const handleMessage = (passedMessage) => {
       chat.payload.name = "";
       chat.payload.text = `${
         message.initiator
-      } seeked the video to ${message.seek.toFixed(1)} s`;
+      } seeked the video to ${convertSecondsToHMS(message.seek.toFixed(1))}`;
 
       sendToAllClients(JSON.stringify(chat));
       sendToAllClients(JSON.stringify(message));
@@ -131,6 +131,16 @@ const handleMessage = (passedMessage) => {
   } catch (err) {
     console.log(err);
   }
+};
+
+const convertSecondsToHMS = (seconds) => {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const remainingSeconds = seconds % 60;
+
+  return (
+    hours + " hours, " + minutes + " minutes, " + remainingSeconds + " seconds"
+  );
 };
 
 //Schema
