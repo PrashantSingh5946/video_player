@@ -237,18 +237,19 @@ export default function Player(props) {
 
   //move time left and write
   const moveBack = () => {
+    //Send an event with the seek stamp
     if (videoRef.current.currentTime > 5) {
-      videoRef.current.currentTime = videoRef.current.currentTime - 5;
+      jumpToTime(videoRef.current.currentTime - 5);
     } else {
-      videoRef.current.currentTime = 0;
+      jumpToTime(0);
     }
   };
 
   const moveForward = () => {
-    if (videoRef.current.currentTime + 5 < videoRef.current.duration) {
-      videoRef.current.currentTime = videoRef.current.currentTime + 5;
+    if (videoRef.current.currentTime + 10 < videoRef.current.duration) {
+      jumpToTime(videoRef.current.currentTime + 10);
     } else {
-      videoRef.current.currentTime = videoRef.current.duration;
+      jumpToTime(videoRef.current.duration);
     }
   };
 
@@ -277,22 +278,37 @@ export default function Player(props) {
   }, [passedDuration]);
 
   const jumpToTime = (e) => {
+    console.log(e);
     if (isVideoOver) {
       setIsVideoOver(false);
       setVideoPlaying(false);
     }
 
-    let clickpoint = e.clientX - 5;
-    let equivalentDuration = (clickpoint / videoWidth) * totalDuration;
+    if (typeof e === "object") {
+      // Variable is an event
+      let clickpoint = e.clientX - 5;
+      let equivalentDuration = (clickpoint / videoWidth) * totalDuration;
 
-    //Send an event with the seek stamp
+      //Send an event with the seek stamp
 
-    let newObj = {
-      seek: equivalentDuration,
-      initiator: localStorage.getItem("name"),
-    };
+      let newObj = {
+        seek: equivalentDuration,
+        initiator: localStorage.getItem("name"),
+      };
 
-    emitSocketMessage(newObj);
+      emitSocketMessage(newObj);
+    } else if (typeof e === "number") {
+      // Variable is a number
+
+      //Send an event with the seek stamp
+
+      let newObj = {
+        seek: e,
+        initiator: localStorage.getItem("name"),
+      };
+
+      emitSocketMessage(newObj);
+    }
   };
 
   useEffect(() => {
